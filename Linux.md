@@ -189,3 +189,123 @@ setfacl -R -m g：用户名：权限 文件目录
 setfacl -R -x g：用户组 文件目录
 
 setfacl -R -b 文件目录
+
+## 📝day5(2026/1/17)
+
+### 部署环境使用命令
+
+修改主机名:hostnamectl set-hostname 主机名
+
+设置host地址： 在/etc/hosts文件中添加  私网IP 主机名 地址
+
+#### JDK部署
+
+1. mkdir -p /export/software/ (创建安装包目录)
+2. 联网下载安装包
+   cd /export/software/
+   wget https://raw.gitcode.com/open-source-toolkit/66825/blobs/7acfac1a75800e01c620ea37a18de1fa62c645e3/jdk-8u241-linux-x64.tar.gz
+3.解压到/opt下
+  tar -xzf jdk-8u241-linux-x64.tar.gz -C /opt
+4.测试
+  cd /opt/jdk1.8.0_241/bin
+  ./java -version
+5.配置全局使用的环境变量
+  vi /etc/profile
+  进入命令行模式后， 输入G，切换到文件底部,然后输入 o 在下一行插入内容
+  添加以下内容:
+export JAVA_HOME=/opt/jdk1.8.0_241(设置 JAVA_HOME 环境变量)
+
+export PATH=$JAVA_HOME/bin:$PATH(设置 PATH 环境变量，方便在命令行使用 java 命令)
+
+export CLASSPATH=$JAVA_HOME/lib:$CLASSPATH(设置 CLASSPATH 环境变量（可选）)
+
+修改后,保存退出 
+esc -> :x
+
+重新加载配置信息，让其生效：
+source /etc/profile
+
+说明：source 命令会读取并执行指定文件中的命令，因此在执行 source 时，文件中的环境变量或命令就会被当前 shell 会话所执行，并立即生效
+
+6.测试
+   在任意路径下执行
+   java -version或javac
+
+#### MySQL部署
+
+1.安装
+dnf install -y https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm
+2.查看是否启动
+dnf repolist enabled | grep mysql
+3.安装MySQL8
+dnf install -y mysql-community-server --nogpgcheck
+4.启动MySQL相关服务
+systemctl start mysqld
+systemctl enable mysqld
+systemctl status mysqld
+5.获取MySQL初始root密码
+日志放置位置： /var/log/mysqld.log
+grep password /var/log/mysqld.log
+6.登录MySQL设置安全相关配置
+mysql_secure_installation
+7.测试登录
+mysql -uroot -p[密码]   可以省略密码 直接回车，然后输入密码  
+8.导入项目
+cd ~
+mysql -uroot -pAa123456. < 文件.sql
+9.校验
+mysql -uroot -pAa123456.(登录MySQL)
+show databases;(查询是否有数据库， 看到 forum-java)
+use forum-java
+show tables;(查询是否有相关的表)
+select * from forum_user;(查询是否有数据)
+
+#### Tomcat部署
+
+1.下载安装包
+cd /export/software
+wget https://mirrors.huaweicloud.com/apache/tomcat/tomcat-9/v9.0.97/bin/apache-tomcat-9.0.97.tar.gz
+2.解压Tomcat服务器到/opt/目录下
+cd /export/software/
+tar -xzf apache-tomcat-9.0.97.tar.gz -C /opt/
+cd /opt/
+3.启动Tomcat服务器
+cd /opt/apache-tomcat-9.0.97/bin
+./startup.sh
+ps -ef | grep tomcat(通过进程查看是否有Tomcat进程信息)
+ss -tulnp(通过查看端口)
+4.添加防火墙配置
+5.监控Tomcat日志服务
+tomcat服务日志: catalina.out
+
+forum-java: 此目录为本次博客系统的相关日志
+access.log: 访问日志
+error.log: 错误日志
+forum-java.log: 项目运行日志 [该项目目前主要使用此日志]
+
+#### Nginx服务部署
+
+1.安装
+dnf install -y nginx 
+2.启动
+systemctl start nginx
+systemctl enable nginx
+systemctl status nginx(查看状态信息)
+3.开放防火墙(http(80)https(443))
+4.测试
+http://nginx服务器的ip地址80
+5.修改Nginx配置文件
+vim /etc/nginx/nginx.conf
+
+添加以下内容:
+location / {
+    proxy_pass http://node2.itcast.cn:8080/;
+}
+
+使用Nginx自带的重新加载配置的命令
+nginx -s reload
+
+6.监控Nginx日志
+- Nginx日志记录所在位置: /var/log/nginx
+- access.log:  Nginx访问日志
+- error.log: 错误日志
