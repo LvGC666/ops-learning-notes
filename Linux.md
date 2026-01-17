@@ -235,24 +235,32 @@ source /etc/profile
 
 1.安装
 dnf install -y https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm
+
 2.查看是否启动
 dnf repolist enabled | grep mysql
+
 3.安装MySQL8
 dnf install -y mysql-community-server --nogpgcheck
+
 4.启动MySQL相关服务
 systemctl start mysqld
 systemctl enable mysqld
 systemctl status mysqld
+
 5.获取MySQL初始root密码
 日志放置位置： /var/log/mysqld.log
 grep password /var/log/mysqld.log
+
 6.登录MySQL设置安全相关配置
 mysql_secure_installation
+
 7.测试登录
 mysql -uroot -p[密码]   可以省略密码 直接回车，然后输入密码  
+
 8.导入项目
 cd ~
 mysql -uroot -pAa123456. < 文件.sql
+
 9.校验
 mysql -uroot -pAa123456.(登录MySQL)
 show databases;(查询是否有数据库， 看到 forum-java)
@@ -265,16 +273,20 @@ select * from forum_user;(查询是否有数据)
 1.下载安装包
 cd /export/software
 wget https://mirrors.huaweicloud.com/apache/tomcat/tomcat-9/v9.0.97/bin/apache-tomcat-9.0.97.tar.gz
+
 2.解压Tomcat服务器到/opt/目录下
 cd /export/software/
 tar -xzf apache-tomcat-9.0.97.tar.gz -C /opt/
 cd /opt/
+
 3.启动Tomcat服务器
 cd /opt/apache-tomcat-9.0.97/bin
 ./startup.sh
 ps -ef | grep tomcat(通过进程查看是否有Tomcat进程信息)
 ss -tulnp(通过查看端口)
+
 4.添加防火墙配置
+
 5.监控Tomcat日志服务
 tomcat服务日志: catalina.out
 
@@ -287,13 +299,17 @@ forum-java.log: 项目运行日志 [该项目目前主要使用此日志]
 
 1.安装
 dnf install -y nginx 
+
 2.启动
 systemctl start nginx
 systemctl enable nginx
 systemctl status nginx(查看状态信息)
+
 3.开放防火墙(http(80)https(443))
+
 4.测试
 http://nginx服务器的ip地址80
+
 5.修改Nginx配置文件
 vim /etc/nginx/nginx.conf
 
